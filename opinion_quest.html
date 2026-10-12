@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPINION QUEST - Unit 9: What's Your Opinion?</title>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Inter for friendly primary school aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Fredoka', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #2e1065 0%, #4c1d95 35%, #1e1b4b 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .font-sans-body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom glowing card effect */
+        .game-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 4px solid #facc15;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Interactive option buttons */
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            transform: translateY(0);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        /* Answer feedback states */
+        .option-correct {
+            background-color: #16a34a !important;
+            border-color: #4ade80 !important;
+            color: #ffffff !important;
+            animation: pulse-green 0.6s cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        .option-wrong {
+            background-color: #dc2626 !important;
+            border-color: #f87171 !important;
+            color: #ffffff !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Custom Keyframe Animations */
+        @keyframes pulse-green {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes star-pop {
+            0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+            80% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .pop-in {
+            animation: star-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Glassmorphic progress bar */
+        .progress-glow {
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.6);
+        }
+
+        /* Custom Scrollbar for review modal */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2e1065;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8b5cf6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-2 sm:p-4 md:p-6 overflow-x-hidden">
+
+    <!-- Top Header Navigation Bar -->
+    <header class="w-full max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-3 bg-purple-950/80 p-3 sm:p-4 rounded-2xl border-2 border-purple-400/30 backdrop-blur-md shadow-lg z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-400 text-purple-950 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-md transform rotate-3">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-wide text-yellow-300 drop-shadow">OPINION QUEST</h1>
+                <p class="text-xs sm:text-sm font-semibold text-purple-200">Unit 9 — What's Your Opinion? <span class="hidden sm:inline-block text-yellow-400 font-normal">| Indefinite Pronouns</span></p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 ml-auto">
+            <!-- Grammar Helper Button -->
+            <button onclick="toggleGrammarModal()" class="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-xl text-xs sm:text-sm flex items-center gap-2 border-2 border-indigo-300 shadow transition" title="Open Grammar Cheat Sheet">
+                <i class="fa-solid fa-book-open text-yellow-300"></i>
+                <span class="hidden xs:inline">Pronoun Helper</span>
+            </button>
+
+            <!-- Sound FX Toggle -->
+            <button id="soundToggle" onclick="toggleSound()" class="bg-purple-800 hover:bg-purple-700 text-yellow-300 font-bold p-2 sm:p-2.5 rounded-xl border border-purple-400 shadow transition" title="Toggle Sound Effects">
+                <i id="soundIcon" class="fa-solid fa-volume-high text-base sm:text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Interactive Display Container -->
+    <main class="w-full max-w-5xl mx-auto my-4 flex-grow flex flex-col justify-center items-center relative">
+
+        <!-- ================= WELCOME SCREEN ================= -->
+        <section id="welcomeScreen" class="w-full flex flex-col items-center text-center py-4 sm:py-8 px-2">
+            <div class="inline-block bg-yellow-400 text-purple-950 text-xs sm:text-sm font-black px-4 py-1.5 rounded-full uppercase tracking-widest mb-4 shadow-lg animate-bounce">
+                🌟 Year 6 ESL Interactive Quiz
+            </div>
+            
+            <h2 class="text-4xl sm:text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-400 mb-2 drop-shadow-lg">
+                OPINION QUEST!
+            </h2>
+            <p class="text-lg sm:text-2xl text-purple-200 font-semibold max-w-2xl mb-6">
+                Master <span class="text-yellow-300 underline underline-offset-4">Indefinite Pronouns</span> while sharing thoughts and opinions!
+            </p>
+
+            <!-- Level Cards Preview -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-3xl mb-8">
+                <div class="bg-purple-900/60 border-2 border-purple-400/40 p-4 rounded-2xl flex flex-col items-center shadow-md">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-2xl text-white mb-2 shadow-md">
+                        🌱
+                    </div>
+                    <h3 class="font-bold text-yellow-300 text-lg">Level 1</h3>
+                    <p class="text-xs text-purple-200 font-sans-body font-medium">Warm-Up (Q1 - Q4)</p>
+                </div>
+                <div class="bg-purple-900/60 border-2 border-purple-400/40 p-4 rounded-2xl flex flex-col items-center shadow-md">
+                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-2xl text-white mb-2 shadow-md">
+                        🛠️
+                    </div>
+                    <h3 class="font-bold text-yellow-300 text-lg">Level 2</h3>
+                    <p class="text-xs text-purple-200 font-sans-body font-medium">Opinion Builder (Q5 - Q8)</p>
+                </div>
+                <div class="bg-purple-900/60 border-2 border-purple-400/40 p-4 rounded-2xl flex flex-col items-center shadow-md">
+                    <div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-2xl text-white mb-2 shadow-md">
+                        🏆
+                    </div>
+                    <h3 class="font-bold text-yellow-300 text-lg">Level 3</h3>
+                    <p class="text-xs text-purple-200 font-sans-body font-medium">Challenge (Q9 - Q12)</p>
+                </div>
+            </div>
+
+            <!-- Start Game CTA Button -->
+            <button onclick="startGame()" class="group relative inline-flex items-center justify-center px-8 py-4 sm:px-12 sm:py-5 text-2xl sm:text-3xl font-extrabold text-purple-950 bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 rounded-2xl shadow-2xl hover:brightness-110 active:scale-95 transition-all transform border-4 border-yellow-200">
+                <i class="fa-solid fa-play mr-3 text-purple-950 group-hover:scale-125 transition-transform"></i>
+                START GAME
+            </button>
+        </section>
+
+        <!-- ================= QUIZ SCREEN ================= -->
+        <section id="quizScreen" class="w-full hidden flex flex-col items-center">
+            
+            <!-- Quiz Status Dashboard Header -->
+            <div class="w-full bg-purple-950/90 border-2 border-purple-400/40 rounded-2xl p-3 sm:p-4 mb-4 shadow-xl backdrop-blur-md">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                    <!-- Current Level Badge -->
+                    <div id="levelBadge" class="bg-emerald-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
+                        🌱 Warm-Up Level
+                    </div>
+
+                    <!-- Question Tracker -->
+                    <div class="text-sm sm:text-base font-extrabold text-yellow-300">
+                        Question <span id="currentQNum">1</span> of 12
+                    </div>
+
+                    <!-- Score & Streak Counter -->
+                    <div class="flex items-center gap-3">
+                        <div class="bg-purple-900/80 px-3 py-1 rounded-xl border border-purple-400/30 text-xs sm:text-sm font-bold">
+                            Score: <span id="scoreDisplay" class="text-yellow-300 text-base sm:text-lg font-black">0</span> pts
+                        </div>
+                        <div class="bg-amber-500/20 px-3 py-1 rounded-xl border border-amber-400/40 text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1">
+                            🔥 Streak: <span id="streakDisplay" class="font-black text-yellow-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animated Progress Bar -->
+                <div class="w-full bg-purple-900/80 h-3.5 sm:h-4 rounded-full overflow-hidden border border-purple-500/30 p-0.5">
+                    <div id="progressBar" class="bg-gradient-to-r from-yellow-400 to-amber-500 h-full rounded-full transition-all duration-500 progress-glow" style="width: 8.33%;"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="game-card w-full rounded-3xl p-4 sm:p-6 md:p-8 text-gray-800 mb-4 relative overflow-hidden">
+                
+                <!-- Question Context / Prompt sentence -->
+                <div class="flex justify-between items-start gap-3 mb-3">
+                    <span id="questionCategory" class="text-xs sm:text-sm font-bold text-purple-700 bg-purple-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                        Unit 9 Opinion Sentence
+                    </span>
+                    <!-- TTS Read Aloud Button -->
+                    <button onclick="readQuestionAloud()" class="bg-purple-100 hover:bg-purple-200 text-purple-800 p-2 rounded-xl text-sm font-bold flex items-center gap-1.5 transition" title="Listen to question">
+                        <i class="fa-solid fa-volume-high text-purple-600"></i>
+                        <span class="text-xs hidden sm:inline">Listen</span>
+                    </button>
+                </div>
+
+                <!-- Question Text -->
+                <div class="min-h-[90px] flex flex-col justify-center my-2">
+                    <p id="fullContextText" class="text-base sm:text-lg text-gray-600 font-sans-body font-medium italic mb-1">
+                        <!-- Context sentence goes here -->
+                    </p>
+                    <h2 id="questionText" class="text-xl sm:text-3xl md:text-4xl font-extrabold text-purple-950 leading-snug">
+                        <!-- Fill in the blank sentence goes here -->
+                    </h2>
+                </div>
+
+                <!-- Answer Options Grid (4 options) -->
+                <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+                    <!-- Dynamic option buttons injected via JS -->
+                </div>
+
+                <!-- Immediate Feedback Card -->
+                <div id="feedbackCard" class="hidden mt-6 p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300">
+                    <div class="flex items-start gap-3">
+                        <div id="feedbackIcon" class="text-2xl sm:text-3xl mt-0.5"></div>
+                        <div class="flex-grow">
+                            <h3 id="feedbackTitle" class="text-lg sm:text-xl font-extrabold mb-1"></h3>
+                            <p id="feedbackExplanation" class="text-sm sm:text-base font-sans-body font-medium text-gray-700 leading-relaxed"></p>
+                            
+                            <!-- Definition Helper Badge -->
+                            <div id="feedbackRule" class="mt-3 bg-white/80 p-2.5 rounded-xl text-xs sm:text-sm font-bold text-purple-900 border border-purple-200 flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500 text-base"></i>
+                                <span id="feedbackRuleText"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Navigation Controls (Next Button) -->
+            <div class="w-full flex justify-end">
+                <button id="nextBtn" onclick="nextQuestion()" disabled class="opacity-50 cursor-not-allowed bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-purple-950 text-lg sm:text-xl font-extrabold py-3.5 px-8 rounded-2xl shadow-xl flex items-center gap-3 transition border-2 border-yellow-200">
+                    <span>NEXT QUESTION</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- ================= RESULTS SCREEN ================= -->
+        <section id="resultsScreen" class="w-full hidden flex flex-col items-center text-center py-4">
+            
+            <div class="game-card w-full max-w-3xl rounded-3xl p-6 sm:p-8 text-gray-800 shadow-2xl relative overflow-hidden">
+                
+                <!-- Confetti Canvas -->
+                <canvas id="confettiCanvas" class="absolute inset-0 pointer-events-none z-10"></canvas>
+
+                <div class="relative z-20">
+                    <!-- Achievement Badge -->
+                    <div id="achievementBadge" class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-tr from-yellow-400 to-amber-300 text-purple-950 rounded-full mx-auto flex items-center justify-center text-4xl sm:text-5xl shadow-lg border-4 border-white mb-3 animate-float">
+                        🏆
+                    </div>
+
+                    <h2 id="achievementTitle" class="text-2xl sm:text-4xl font-extrabold text-purple-950 mb-1">
+                        Indefinite Pronoun Master!
+                    </h2>
+                    <p class="text-sm sm:text-base text-gray-600 font-sans-body mb-6">
+                        Unit 9 — What's Your Opinion? Quest Completed!
+                    </p>
+
+                    <!-- Score Card Display -->
+                    <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white rounded-2xl p-6 mb-6 shadow-inner border-2 border-purple-400/40">
+                        <div class="text-xs sm:text-sm text-purple-200 font-bold uppercase tracking-wider mb-1">Total Score Earned</div>
+                        <div class="text-5xl sm:text-7xl font-black text-yellow-300 my-1">
+                            <span id="finalScore">0</span> <span class="text-2xl sm:text-3xl text-purple-200">/ 180</span>
+                        </div>
+                        <div id="scorePercentage" class="text-sm font-bold text-emerald-400 mt-1">
+                            Accuracy: 100%
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Stats -->
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+                        <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                            <div class="text-xs text-gray-500 font-sans-body font-bold">Correct</div>
+                            <div id="statCorrect" class="text-lg sm:text-2xl font-black text-emerald-600">12/12</div>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                            <div class="text-xs text-gray-500 font-sans-body font-bold">Max Streak</div>
+                            <div id="statStreak" class="text-lg sm:text-2xl font-black text-amber-500">🔥 12</div>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                            <div class="text-xs text-gray-500 font-sans-body font-bold">Level Clear</div>
+                            <div class="text-lg sm:text-2xl font-black text-purple-600">3 / 3</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-center gap-3">
+                        <button onclick="startGame()" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-purple-950 font-extrabold text-lg sm:text-xl py-3 px-8 rounded-2xl shadow-lg border-2 border-yellow-200 transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            PLAY AGAIN
+                        </button>
+                        <button onclick="toggleReviewModal()" class="bg-purple-800 hover:bg-purple-700 text-white font-bold text-base sm:text-lg py-3 px-6 rounded-2xl shadow transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-list-check"></i>
+                            Review Answers
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ================= GRAMMAR CHEAT SHEET MODAL ================= -->
+    <div id="grammarModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 text-gray-800 shadow-2xl border-4 border-yellow-400 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">💡</span>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-purple-950">Grammar Helper: Indefinite Pronouns</h3>
+                </div>
+                <button onclick="toggleGrammarModal()" class="text-gray-400 hover:text-gray-700 text-2xl font-bold px-2">&times;</button>
+            </div>
+
+            <div class="overflow-y-auto space-y-3 pr-1 text-sm sm:text-base font-sans-body">
+                <p class="text-gray-600 font-medium mb-2">Indefinite pronouns refer to people or things without saying exactly who or what they are!</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Everyone / everyone</span>
+                        <span class="text-gray-700">All people in a group.</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Someone</span>
+                        <span class="text-gray-700">An unspecified person.</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Anyone</span>
+                        <span class="text-gray-700">Any person (used in questions & negatives).</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">No one</span>
+                        <span class="text-gray-700">Nobody / zero people.</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Something</span>
+                        <span class="text-gray-700">An unspecified thing.</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Anything</span>
+                        <span class="text-gray-700">Any thing (used in questions & negatives).</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Nothing</span>
+                        <span class="text-gray-700">Not anything / zero things.</span>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                        <span class="font-extrabold text-purple-900 block text-base">Everything</span>
+                        <span class="text-gray-700">All things in total.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t text-right">
+                <button onclick="toggleGrammarModal()" class="bg-purple-900 hover:bg-purple-800 text-white font-bold py-2 px-6 rounded-xl transition">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= ANSWER REVIEW MODAL ================= -->
+    <div id="reviewModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-6 text-gray-800 shadow-2xl border-4 border-purple-500 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl sm:text-2xl font-extrabold text-purple-950">Answer Review</h3>
+                <button onclick="toggleReviewModal()" class="text-gray-400 hover:text-gray-700 text-2xl font-bold px-2">&times;</button>
+            </div>
+
+            <div id="reviewList" class="overflow-y-auto space-y-3 pr-1 text-sm sm:text-base font-sans-body">
+                <!-- Injected dynamically -->
+            </div>
+
+            <div class="mt-4 pt-3 border-t text-right">
+                <button onclick="toggleReviewModal()" class="bg-purple-900 hover:bg-purple-800 text-white font-bold py-2 px-6 rounded-xl transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-5xl mx-auto text-center py-2 text-xs text-purple-300 font-sans-body opacity-80">
+        Unit 9 — What's Your Opinion? • Primary ESL Interactive Learning Module
+    </footer>
+
+    <script>
+        /* ================= QUESTION DATABASE ================= */
+        // Questions exactly as specified in requirements
+        const questionsDatabase = [
+            {
+                id: 1,
+                level: 1,
+                levelName: "🌱 Warm-Up",
+                context: "Everyone thinks school uniforms are a good idea.",
+                question: "_____ thinks school uniforms are a good idea.",
+                options: ["Everyone", "Anything", "Nothing", "Anyone"],
+                correct: "Everyone",
+                explanation: "'Everyone' refers to all people. We use it when speaking about every person in a group.",
+                rule: "Everyone = all people."
+            },
+            {
+                id: 2,
+                level: 1,
+                levelName: "🌱 Warm-Up",
+                context: "Asking about people's opinion.",
+                question: "Does _____ have an opinion about school uniforms?",
+                options: ["someone", "anyone", "nothing", "everything"],
+                correct: "anyone",
+                explanation: "'Anyone' means any person. We often use it in questions!",
+                rule: "Anyone = any person (used in questions)."
+            },
+            {
+                id: 3,
+                level: 1,
+                levelName: "🌱 Warm-Up",
+                context: "Discussing classmate responses.",
+                question: "I asked my classmates, but _____ agreed with my opinion.",
+                options: ["someone", "everyone", "no one", "something"],
+                correct: "no one",
+                explanation: "'No one' means nobody or zero people.",
+                rule: "No one = nobody."
+            },
+            {
+                id: 4,
+                level: 1,
+                levelName: "🌱 Warm-Up",
+                context: "Evaluating a new school rule.",
+                question: "There is _____ interesting about this new school rule.",
+                options: ["anything", "nothing", "anyone", "someone"],
+                correct: "nothing",
+                explanation: "'Nothing' means not anything or zero things.",
+                rule: "Nothing = not anything."
+            },
+            {
+                id: 5,
+                level: 2,
+                levelName: "🛠️ Opinion Builder",
+                context: "Group discussion scenario.",
+                question: "_____ in my group has a different opinion, so we need to discuss it.",
+                options: ["Someone", "Something", "Nothing", "Anyone"],
+                correct: "Someone",
+                explanation: "'Someone' refers to an unspecified person.",
+                rule: "Someone = an unspecified person."
+            },
+            {
+                id: 6,
+                level: 2,
+                levelName: "🛠️ Opinion Builder",
+                context: "Strong belief on a topic.",
+                question: "I do not think _____ can change my opinion about this topic.",
+                options: ["anyone", "someone", "everyone", "no one"],
+                correct: "anyone",
+                explanation: "'Anyone' is used in negative sentences (sentences with 'not' or 'don't').",
+                rule: "Anyone = any person (used in negative sentences)."
+            },
+            {
+                id: 7,
+                level: 2,
+                levelName: "🛠️ Opinion Builder",
+                context: "Classroom etiquette rule.",
+                question: "_____ should listen respectfully when a classmate gives an opinion.",
+                options: ["Everyone", "Nothing", "Something", "Anyone"],
+                correct: "Everyone",
+                explanation: "'Everyone' means all people in the class.",
+                rule: "Everyone = all people."
+            },
+            {
+                id: 8,
+                level: 2,
+                levelName: "🛠️ Opinion Builder",
+                context: "Inviting more ideas.",
+                question: "Would you like _____ to add to our discussion?",
+                options: ["nothing", "something", "no one", "everyone"],
+                correct: "something",
+                explanation: "'Something' refers to an unspecified thing.",
+                rule: "Something = an unspecified thing."
+            },
+            {
+                id: 9,
+                level: 3,
+                levelName: "🏆 Challenge",
+                context: "Class opinion on trips.",
+                question: "_____ in our class thinks that school trips are boring.",
+                options: ["Everyone", "No one", "Something", "Anything"],
+                correct: "No one",
+                explanation: "'No one' means zero people in the class.",
+                rule: "No one = nobody."
+            },
+            {
+                id: 10,
+                level: 3,
+                levelName: "🏆 Challenge",
+                context: "Respecting different views.",
+                question: "I think _____ can have a different opinion, and that is okay.",
+                options: ["someone", "everyone", "something", "nothing"],
+                correct: "everyone",
+                explanation: "'Everyone' means all people are allowed to have their own views.",
+                rule: "Everyone = all people."
+            },
+            {
+                id: 11,
+                level: 3,
+                levelName: "🏆 Challenge",
+                context: "Open floor question.",
+                question: "Is there _____ you would like to say about this topic?",
+                options: ["anything", "everyone", "someone", "nothing"],
+                correct: "anything",
+                explanation: "'Anything' means any thing. It is used in open questions.",
+                rule: "Anything = any thing (used in questions)."
+            },
+            {
+                id: 12,
+                level: 3,
+                levelName: "🏆 Challenge",
+                context: "Final firm opinion statement.",
+                question: "My opinion is clear. _____ can change it now!",
+                options: ["Everyone", "Something", "No one", "Anything"],
+                correct: "No one",
+                explanation: "'No one' means nobody. Not a single person can change it.",
+                rule: "No one = nobody."
+            }
+        ];
+
+        /* ================= GAME STATE VARIABLES ================= */
+        let currentQIndex = 0;
+        let score = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let soundEnabled = true;
+        let answered = false;
+        let currentShuffledOptions = [];
+        let userAnswersHistory = [];
+
+        /* ================= WEB AUDIO SYNTHESIZER ================= */
+        // Web Audio API for zero-dependency interactive sounds
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'fanfare') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                        g.gain.linearRampToValueAtTime(0.01, now + idx * 0.12 + 0.25);
+                        o.start(now + idx * 0.12);
+                        o.stop(now + idx * 0.12 + 0.25);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio not allowed or supported yet.");
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-base sm:text-lg';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-base sm:text-lg text-red-400';
+            }
+        }
+
+        /* ================= SPEECH SYNTHESIS (READ ALOUD) ================= */
+        function readQuestionAloud() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop current speech
+                const q = questionsDatabase[currentQIndex];
+                const text = `${q.context} ${q.question.replace('_____', 'blank')}`;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower for ESL pupils
+                utterance.pitch = 1.0;
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        /* ================= GAME ENGINE & LOGIC ================= */
+
+        function startGame() {
+            playSound('click');
+            currentQIndex = 0;
+            score = 0;
+            streak = 0;
+            maxStreak = 0;
+            userAnswersHistory = [];
+
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            const q = questionsDatabase[currentQIndex];
+
+            // Update UI Counters
+            document.getElementById('currentQNum').innerText = currentQIndex + 1;
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('streakDisplay').innerText = streak;
+
+            // Progress Bar
+            const progPercent = ((currentQIndex + 1) / questionsDatabase.length) * 100;
+            document.getElementById('progressBar').style.width = `${progPercent}%`;
+
+            // Level Badge
+            const levelBadge = document.getElementById('levelBadge');
+            if (q.level === 1) {
+                levelBadge.className = "bg-emerald-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow";
+            } else if (q.level === 2) {
+                levelBadge.className = "bg-blue-600 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow";
+            } else {
+                levelBadge.className = "bg-amber-500 text-white text-xs sm:text-sm font-bold px-3 py-1 rounded-full shadow";
+            }
+            levelBadge.innerText = q.levelName;
+
+            // Context & Question Text
+            document.getElementById('fullContextText').innerText = q.context;
+            document.getElementById('questionText').innerHTML = q.question.replace('_____', '<span class="text-purple-600 underline underline-offset-8 font-black">_____</span>');
+
+            // Hide Feedback Card & Reset Next Button
+            const feedbackCard = document.getElementById('feedbackCard');
+            feedbackCard.classList.add('hidden');
+            feedbackCard.className = 'hidden mt-6 p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300';
+
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Shuffle Options for dynamic play
+            currentShuffledOptions = [...q.options];
+            shuffleArray(currentShuffledOptions);
+
+            // Render Option Buttons
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            const prefixes = ['A', 'B', 'C', 'D'];
+
+            currentShuffledOptions.forEach((option, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full bg-purple-50 hover:bg-purple-100 text-purple-950 font-extrabold text-lg sm:text-2xl py-3.5 px-4 rounded-2xl border-3 border-purple-200 text-left flex items-center gap-3 shadow-sm transition`;
+                btn.onclick = () => selectAnswer(option, btn);
+                
+                btn.innerHTML = `
+                    <span class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-200 text-purple-900 flex items-center justify-center text-sm sm:text-base font-black flex-shrink-0">
+                        ${prefixes[idx]}
+                    </span>
+                    <span class="flex-grow">${option}</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        // Utility: Fisher-Yates shuffle
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function selectAnswer(selectedOption, selectedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const q = questionsDatabase[currentQIndex];
+            const isCorrect = selectedOption.toLowerCase() === q.correct.toLowerCase();
+
+            // Disable all option buttons
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(btn => btn.disabled = true);
+
+            // Calculate Score & Streak
+            let pointsEarned = 0;
+            if (isCorrect) {
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+                
+                // Base 10 pts + 5 pts streak bonus if streak >= 2
+                pointsEarned = 10 + (streak >= 2 ? 5 : 0);
+                
+                // Extra level clear bonus on Q4, Q8, Q12
+                if (currentQIndex === 3 || currentQIndex === 7 || currentQIndex === 11) {
+                    pointsEarned += 5;
+                }
+                
+                score += pointsEarned;
+                playSound('correct');
+
+                // Visual styling for selected correct button
+                selectedBtn.classList.add('option-correct');
+            } else {
+                streak = 0;
+                playSound('wrong');
+
+                // Visual styling for wrong choice
+                selectedBtn.classList.add('option-wrong');
+
+                // Reveal correct option
+                allBtns.forEach(btn => {
+                    if (btn.innerText.includes(q.correct)) {
+                        btn.classList.add('option-correct');
+                    }
+                });
+            }
+
+            // Save history for final review
+            userAnswersHistory.push({
+                questionNum: currentQIndex + 1,
+                questionText: q.question,
+                userChoice: selectedOption,
+                correctChoice: q.correct,
+                isCorrect: isCorrect,
+                explanation: q.explanation
+            });
+
+            // Update UI Score displays
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('streakDisplay').innerText = streak;
+
+            // Show Immediate Feedback Card
+            showFeedback(isCorrect, q, pointsEarned);
+
+            // Enable Next Button
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            if (currentQIndex === questionsDatabase.length - 1) {
+                nextBtn.querySelector('span').innerText = "SEE RESULTS";
+            } else {
+                nextBtn.querySelector('span').innerText = "NEXT QUESTION";
+            }
+        }
+
+        function showFeedback(isCorrect, q, pointsEarned) {
+            const feedbackCard = document.getElementById('feedbackCard');
+            const feedbackIcon = document.getElementById('feedbackIcon');
+            const feedbackTitle = document.getElementById('feedbackTitle');
+            const feedbackExplanation = document.getElementById('feedbackExplanation');
+            const feedbackRuleText = document.getElementById('feedbackRuleText');
+
+            feedbackCard.classList.remove('hidden');
+
+            if (isCorrect) {
+                feedbackCard.className = 'mt-6 p-4 sm:p-5 rounded-2xl border-2 border-emerald-400 bg-emerald-50 text-emerald-950 pop-in';
+                feedbackIcon.innerHTML = '🎉';
+                feedbackTitle.innerText = streak >= 2 ? `Awesome! +${pointsEarned} Pts (Streak Bonus! 🔥)` : `Correct! +${pointsEarned} Pts`;
+                feedbackTitle.className = 'text-lg sm:text-xl font-extrabold text-emerald-800 mb-1';
+            } else {
+                feedbackCard.className = 'mt-6 p-4 sm:p-5 rounded-2xl border-2 border-rose-400 bg-rose-50 text-rose-950 pop-in';
+                feedbackIcon.innerHTML = '💡';
+                feedbackTitle.innerText = `Nice try! Correct answer: "${q.correct}"`;
+                feedbackTitle.className = 'text-lg sm:text-xl font-extrabold text-rose-800 mb-1';
+            }
+
+            feedbackExplanation.innerText = q.explanation;
+            feedbackRuleText.innerText = q.rule;
+        }
+
+        function nextQuestion() {
+            if (!answered) return;
+            playSound('click');
+
+            if (currentQIndex < questionsDatabase.length - 1) {
+                currentQIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        /* ================= RESULTS & CELEBRATION ================= */
+
+        function showResults() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            playSound('fanfare');
+
+            // Calculate percentage
+            const percentage = Math.round((score / 180) * 100);
+            const correctCount = userAnswersHistory.filter(a => a.isCorrect).length;
+
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('scorePercentage').innerText = `Accuracy: ${Math.round((correctCount/12)*100)}% (${correctCount}/12 Correct)`;
+            document.getElementById('statCorrect').innerText = `${correctCount}/12`;
+            document.getElementById('statStreak').innerText = `🔥 ${maxStreak}`;
+
+            // Achievement Titles based on specification thresholds
+            const titleElem = document.getElementById('achievementTitle');
+            const badgeElem = document.getElementById('achievementBadge');
+
+            if (score >= 160) {
+                titleElem.innerText = "Indefinite Pronoun Master!";
+                badgeElem.innerText = "👑";
+                startConfetti();
+            } else if (score >= 120) {
+                titleElem.innerText = "Opinion Quest Champion!";
+                badgeElem.innerText = "🏆";
+                startConfetti();
+            } else if (score >= 80) {
+                titleElem.innerText = "Great Effort! Keep Practising!";
+                badgeElem.innerText = "🌟";
+            } else {
+                titleElem.innerText = "Keep Going! Try Again!";
+                badgeElem.innerText = "💪";
+            }
+
+            buildReviewList();
+        }
+
+        /* ================= MODAL CONTROLS ================= */
+
+        function toggleGrammarModal() {
+            playSound('click');
+            const modal = document.getElementById('grammarModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function toggleReviewModal() {
+            playSound('click');
+            const modal = document.getElementById('reviewModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function buildReviewList() {
+            const list = document.getElementById('reviewList');
+            list.innerHTML = '';
+
+            userAnswersHistory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border ${item.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`;
+                
+                div.innerHTML = `
+                    <div class="flex items-center justify-between font-bold mb-1">
+                        <span class="${item.isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                            Q${item.questionNum}: ${item.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                        </span>
+                        <span class="text-xs text-gray-500">Correct: <strong>${item.correctChoice}</strong></span>
+                    </div>
+                    <p class="text-sm font-semibold text-gray-800 mb-1">${item.questionText}</p>
+                    <p class="text-xs text-gray-600">Your Answer: <span class="font-bold">${item.userChoice}</span></p>
+                    <p class="text-xs italic text-gray-500 mt-1">${item.explanation}</p>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        /* ================= CELEBRATION CONFETTI CANVAS ================= */
+        function startConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            const particles = [];
+            const colors = ['#facc15', '#4ade80', '#60a5fa', '#f472b6', '#a78bfa'];
+
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    vy: Math.random() * 3 + 2,
+                    vx: Math.random() * 2 - 1,
+                    rot: Math.random() * 360
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.y += p.vy;
+                    p.x += p.vx;
+                    p.rot += 2;
+                    ctx.save();
+                    ctx.fillStyle = p.color;
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rot * Math.PI) / 180);
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+
+                    if (p.y > canvas.height) {
+                        p.y = -10;
+                        p.x = Math.random() * canvas.width;
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
